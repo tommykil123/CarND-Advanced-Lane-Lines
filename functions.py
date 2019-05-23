@@ -151,7 +151,7 @@ def find_lane_pixels(binary_warped):
         cv2.rectangle(out_img,(win_xright_low,win_y_low),
         (win_xright_high,win_y_high),(0,255,0), 2) 
         
-        ### TO-DO: Identify the nonzero pixels in x and y within the window ###
+        # Identify the nonzero pixels in x and y within the window #
         good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
         (nonzerox >= win_xleft_low) & (nonzerox < win_xleft_high)).nonzero()[0]
         good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
@@ -161,8 +161,6 @@ def find_lane_pixels(binary_warped):
         left_lane_inds.append(good_left_inds)
         right_lane_inds.append(good_right_inds)
         
-        ### TO-DO: If you found > minpix pixels, recenter next window ###
-        ### (`right` or `leftx_current`) on their mean position ###
         if len(good_left_inds) > minpix:
             leftx_current = np.int(np.mean(nonzerox[good_left_inds]))
         if len(good_right_inds) > minpix:
@@ -200,7 +198,7 @@ def fit_polynomial(binary_warped):
     # Find our lane pixels first
     leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
 
-    ### TO-DO: Fit a second order polynomial to each using `np.polyfit` ###
+    # Second order polynomial to each using `np.polyfit` #
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
 
@@ -232,12 +230,12 @@ def fit_polynomial(binary_warped):
     return out_img, left_fit, right_fit, left_curve, right_curve
 
 def fit_poly(img_shape, leftx, lefty, rightx, righty):
-    ### TO-DO: Fit a second order polynomial to each with np.polyfit() ###
+    # second order polynomial to each with np.polyfit() #
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx , 2)
     # Generate x and y values for plotting
     ploty = np.linspace(0, img_shape[0]-1, img_shape[0])
-    ### TO-DO: Calc both polynomials using ploty, left_fit and right_fit ###
+    # Calc both polynomials using ploty, left_fit and right_fit #
     left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
     right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
     
@@ -280,10 +278,7 @@ def search_around_poly(binary_warped, temp):
     nonzeroy = np.array(nonzero[0])
     nonzerox = np.array(nonzero[1])
     
-    ### TO-DO: Set the area of search based on activated x-values ###
-    ### within the +/- margin of our polynomial function ###
-    ### Hint: consider the window areas for the similarly named variables ###
-    ### in the previous quiz, but change the windows to our new search area ###
+    # Set the area of search based on activated x-values #
     left_lane_inds = ((nonzerox > (temp.left_fit[0]*(nonzeroy**2) + temp.left_fit[1]*nonzeroy + 
                     temp.left_fit[2] - margin)) & (nonzerox < (temp.left_fit[0]*(nonzeroy**2) + 
                     temp.left_fit[1]*nonzeroy + temp.left_fit[2] + margin)))
