@@ -118,7 +118,21 @@ I used the following equations to acheive this:
 * left_fit = np.polyfit(lefty, leftx, 2)
 * left_curverad = ((1 + (2*left_fit[0]*y_eval*ym_per_pix + left_fit[1])**2)**1.5) / np.absolute(2*left_fit[0])
   
+Offset was calculated by:
+* real_mid = imshape[1]//2
+* img_mid = (left_fitx[imshape[0]-1] + right_fitx[imshape[0]-1]) // 2
+* offset = (real_mid - img_mid) * xm_per_pix
+  
 YES DONE!! 
 
 ![final Image](10_test_images_final/straight_lines1_combinedall.jpg)
 
+### Discussion Points
+1. What problems/issues existed?
+* The tuning of the tresholds for white dashed lines.
+* The speed of the algorithm
+2. Where will the pipeline fail?
+* If the images contained multiple lines (cracks, etc).
+* If the images contain too drastic curvatures (because using one ROI)
+3. How to make it more robost?
+* Better tuning of the thresholds for detecting lines
