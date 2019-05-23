@@ -3,6 +3,17 @@ import cv2
 import glob
 import matplotlib.pyplot as plt
 
+ym_per_pix = 30/720 # meters per pixel in y dimension
+xm_per_pix = 3.7/640 # meters per pixel in x dimension
+bot_left = (190,720)
+top_left = (600,445)
+top_right = (680, 445)
+bot_right = (1120,720)
+dest_bot_left = (300,720)
+dest_top_left = (300,0)
+dest_top_right = (1240-300,0)
+dest_bot_right = (1240-300,720)
+
 class Line():
     def __init__(self):
         # line detected in last iteration?
@@ -79,6 +90,16 @@ def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
     binary_output =  np.zeros_like(absgraddir)
     binary_output[(absgraddir >= thresh[0]) & (absgraddir <= thresh[1])] = 1
     # Return the binary image
+    return binary_output
+
+# Define a function that thresholds the S-channel of HLS
+def hls_select(img, thresh_h=(0,179), thresh_s = (0, 255)):
+    hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+    H = hls[:,:,0] 
+    L = hls[:,:,1]
+    S = hls[:,:,2]
+    binary_output = np.zeros_like(S)
+    binary_output[((S > thresh_s[0]) & (S <= thresh_s[1])) & ((H > thresh_h[0]) & (H <= thresh_h[1]))] = 1
     return binary_output
 
 def find_lane_pixels(binary_warped):
@@ -210,7 +231,19 @@ def fit_polynomial(binary_warped):
     cv2.putText(out_img,str(right_curve),(1100, 600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255),2)
     return out_img, left_fit, right_fit, left_curve, right_curve
 
-def find_initial_lane_poly(img):
+def fit_poly(img_shape, leftx, lefty, rightx, righty):
+    ### TO-DO: Fit a second order polynomial to each with np.polyfit() ###
+    left_fit = np.polyfit(lefty, leftx, 2)
+    right_fit = np.polyfit(righty, rightx , 2)
+    # Generate x and y values for plotting
+    ploty = np.linspace(0, img_shape[0]-1, img_shape[0])
+    ### TO-DO: Calc both polynomials using ploty, left_fit and right_fit ###
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    
+    return left_fitx, right_fitx, ploty
+
+def find_initial_lane_poly(img, objpoints, imgpoints):
     # Undistort the images
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints,imgpoints, img.shape[1:], None, None)
     undist = cv2.undistort(img, mtx, dist, None, mtx)
@@ -240,7 +273,7 @@ def find_initial_lane_poly(img):
     out_img, left_fit, right_fit, left_curve, right_curve = fit_polynomial(warp)
     return left_fit, right_fit
 
-def search_around_poly(binary_warped):
+def search_around_poly(binary_warped, temp):
     margin = 50
     # Grab the activated pixels
     nonzero = binary_warped.nonzero()
@@ -255,17 +288,47 @@ def search_around_poly(binary_warped):
     left_lane_inds = ((nonzerox > (left_fit[0]*(nonzeroy**2) + left_fit[1]*nonzeroy +
                                    left_fit[2] - margin)) & (nonzerox < (left_fit[0]*(nonzeroy**2) + 
                                                                          left_fit[1]*nonzeroy + left_fit[2] + margin)))
-    right_lane_indx = ((nonzerox > (right_fit[0]*(nonzeroy**2) + right_fit[1]*nonzeroy +
+    right_lane_inds = ((nonzerox > (right_fit[0]*(nonzeroy**2) + right_fit[1]*nonzeroy +
                                    right_fit[2] - margin)) & (nonzeroy < (right_fit[0]*(nonzeroy**2) + 
                                                                          right_fit[1]*nonzeroy + right_fit[2] + margin)))
     # Again, extract left and right line pixel positions
-    leftx = nonzerox[left_lane_inds]
+    leftx = nonzerox[left_lane_inds]	
     lefty = nonzeroy[left_lane_inds]
     rightx = nonzerox[right_lane_inds]
     righty = nonzeroy[right_lane_inds]
     
     # Fit new polynomials
-    left_fit = np.polyfit(lefty, leftx, 2)
-    right_fit = np.polyfit(righty, rightx,2)
+    left_fitx, right_fitx, ploty = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
+
+    ## Visualization ##
+    # Create an image to draw on and an image to show the selection window
+    out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
+    window_img = np.zeros_like(out_img)
+    # Color in left and right line pixels
+    out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
+    out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
+
+    # Generate a polygon to illustrate the search window area
+    # And recast the x and y points into usable format for cv2.fillPoly()
+    #left_line_window1 = np.array([np.transpose(np.vstack([left_fitx-margin, ploty]))])
+    #left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx+margin, 
+                              #ploty])))])
+    #left_line_pts = np.hstack((left_line_window1, left_line_window2))
+    #right_line_window1 = np.array([np.transpose(np.vstack([right_fitx-margin, ploty]))])
+    #right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx+margin, 
+                              #ploty])))])
+    #right_line_pts = np.hstack((right_line_window1, right_line_window2))
+
+    # Draw the lane onto the warped blank image
+    #cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
+    #cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
+    #result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
     
-    return left_fit, right_fit
+    # Plot the polynomial lines onto the image
+    #plt.plot(left_fitx, ploty, color='yellow')
+    #`plt.plot(right_fitx, ploty, color='yellow')
+    ## End visualization steps ##
+    
+    #return result
+    left_curve, right_curve = measure_curvature(ploty, left_fit, right_fit)
+    return left_fit, right_fit, left_curve, right_curve
