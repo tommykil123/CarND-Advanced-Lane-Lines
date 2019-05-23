@@ -241,7 +241,7 @@ def fit_poly(img_shape, leftx, lefty, rightx, righty):
     left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
     right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
     
-    return left_fitx, right_fitx, ploty
+    return left_fit, right_fit, left_fitx, right_fitx, ploty
 
 def find_initial_lane_poly(img, objpoints, imgpoints):
     # Undistort the images
@@ -274,31 +274,32 @@ def find_initial_lane_poly(img, objpoints, imgpoints):
     return left_fit, right_fit
 
 def search_around_poly(binary_warped, temp):
-    margin = 50
-    # Grab the activated pixels
+    margin = 100
+    # Grab activated pixels
     nonzero = binary_warped.nonzero()
     nonzeroy = np.array(nonzero[0])
     nonzerox = np.array(nonzero[1])
     
-    # Get info from userdata class
-    left_fit = temp.left_fit
-    right_fit = temp.right_fit
+    ### TO-DO: Set the area of search based on activated x-values ###
+    ### within the +/- margin of our polynomial function ###
+    ### Hint: consider the window areas for the similarly named variables ###
+    ### in the previous quiz, but change the windows to our new search area ###
+    left_lane_inds = ((nonzerox > (temp.left_fit[0]*(nonzeroy**2) + temp.left_fit[1]*nonzeroy + 
+                    temp.left_fit[2] - margin)) & (nonzerox < (temp.left_fit[0]*(nonzeroy**2) + 
+                    temp.left_fit[1]*nonzeroy + temp.left_fit[2] + margin)))
+    right_lane_inds = ((nonzerox > (temp.right_fit[0]*(nonzeroy**2) + temp.right_fit[1]*nonzeroy + 
+                    temp.right_fit[2] - margin)) & (nonzerox < (temp.right_fit[0]*(nonzeroy**2) + 
+                    temp.right_fit[1]*nonzeroy + temp.right_fit[2] + margin)))
     
-    # Set the are of search based on activated x-values
-    left_lane_inds = ((nonzerox > (left_fit[0]*(nonzeroy**2) + left_fit[1]*nonzeroy +
-                                   left_fit[2] - margin)) & (nonzerox < (left_fit[0]*(nonzeroy**2) + 
-                                                                         left_fit[1]*nonzeroy + left_fit[2] + margin)))
-    right_lane_inds = ((nonzerox > (right_fit[0]*(nonzeroy**2) + right_fit[1]*nonzeroy +
-                                   right_fit[2] - margin)) & (nonzeroy < (right_fit[0]*(nonzeroy**2) + 
-                                                                         right_fit[1]*nonzeroy + right_fit[2] + margin)))
     # Again, extract left and right line pixel positions
-    leftx = nonzerox[left_lane_inds]	
-    lefty = nonzeroy[left_lane_inds]
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds] 
     rightx = nonzerox[right_lane_inds]
     righty = nonzeroy[right_lane_inds]
+
     
     # Fit new polynomials
-    left_fitx, right_fitx, ploty = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
+    left_fit, right_fit, left_fitx, right_fitx, ploty = fit_poly(binary_warped.shape, leftx, lefty, rightx, righty)
 
     ## Visualization ##
     # Create an image to draw on and an image to show the selection window
@@ -326,7 +327,7 @@ def search_around_poly(binary_warped, temp):
     
     # Plot the polynomial lines onto the image
     #plt.plot(left_fitx, ploty, color='yellow')
-    #`plt.plot(right_fitx, ploty, color='yellow')
+    #plt.plot(right_fitx, ploty, color='yellow')
     ## End visualization steps ##
     
     #return result

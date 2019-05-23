@@ -1,9 +1,4 @@
 ## Advanced Lane Finding
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
-![Lanes Image](./examples/example_output.jpg)
-
-
-# Project Overview
 
 ### Step 0: My Pipeline
 
@@ -25,44 +20,56 @@ This pipeline has been applied to both images and videos
 
 ### Step 1: Camera Image
 ![Camera Image](1_camera_cal/calibration20.jpg)
+This is a sample camera picture.
 
 ### Step 2: Calibrate and Undistort Raw Image
 ![Undistort Image](2_camera_undist/undist20.jpg)
+Undistorting the raw camera picture.
 
 ### Step 3: Transform/Warp Image
 ![Warpcamera Image](3_camera_transform/transform20.jpg)
-
+Warp the image to show only the grid cells.
 
 # Lane Line Images
 
 ### Step 4: Lane Line Image
 ![Laneline Image](4_test_images/straight_lines1.jpg)
+This is a sample lane line image.
 
 ### Step 5: Undistort Lane Line Image
 ![Undistort Laneline Image](5_test_images_undist/straight_lines1_undist.jpg)
+Undistort the lane line image using the calibration information from STEP 2.
 
 ### Step 6: Apply thresholds (Sobel, Gradient, HLS, etc)
 ![Sobelx Image](6A_test_images_sobelx/straight_lines1_undist_sobelx.jpg)
+Applying Sobel thresholds X
 ![Sobely Image](6B_test_images_sobely/straight_lines1_undist_sobely.jpg)
+Applying Sobel thresholds Y
 ![Sobelxy Image](6C_test_images_sobelxy/straight_lines1_undist_sobelxy.jpg)
+Applying Sobel thresholds for both X and Y
 ![Gradient Image](6D_test_images_gradient/straight_lines1_undist_gradient.jpg)
+Applying the Sobel Gradient
 ![Combined Sobel Image](6E_test_images_combinedthr/straight_lines1_undist_combintedthr.jpg)
-
+Combining the Sobel Thresholds 
 ![HLS Image](6F_test_images_hls/straight_lines1_undist_hls.jpg)
-
+Applying H and L (HLS) thresholds
 ![Sobel HLS Image](6G_test_images_combined_all/straight_lines1_undist_combinedall.jpg)
+Combining Sobel and HLS threshold
 
+### Step 7: Region of Interest
+![ROI Image](7A_test_images_roi/straight_lines1_undist_roi.jpg)
+The region of interest that I have chosen 
+![ROI Warped Image](7B_test_images_roi_warp/straight_lines1_undist_warp.jpg)
+Sanity check to check that the warp looks good
 
-The goals / steps of this project are the following:
+### Step 8: Warping the binary Image
+![hist Image](8_test_image_warp/straight_lines1_undist_combinedall_warp.jpg)
+Applying histogram filter to find the left and right lanes.
 
-* Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
-* Apply a distortion correction to raw images.
-* Use color transforms, gradients, etc., to create a thresholded binary image.
-* Apply a perspective transform to rectify binary image ("birds-eye view").
-* Detect lane pixels and fit to find the lane boundary.
-* Determine the curvature of the lane and vehicle position with respect to center.
-* Warp the detected lane boundaries back onto the original image.
-* Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
+### Step 9: Histogram and Sliding Window Line Detect
+![hist Image](9_test_image_hist/straight_lines1_undist_combinedall_warp_hist.jpg)
+Applying histogram filter to find the left and right lanes.
 
-
+### Step 10: Final output
+![final Image](10_test_image_final/straight_lines1_combinedall.jpg)
 
