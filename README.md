@@ -63,13 +63,13 @@ The region of interest that I have chosen
 Sanity check to check that the warp looks good
 
 ### Step 8: Warping the binary Image
-![hist Image](8_test_image_warp/straight_lines1_undist_combinedall_warp.jpg)
+![hist Image](8_test_images_warp/straight_lines1_undist_combinedall_warp.jpg)
 Applying histogram filter to find the left and right lanes.
 
 ### Step 9: Histogram and Sliding Window Line Detect
-![hist Image](9_test_image_hist/straight_lines1_undist_combinedall_warp_hist.jpg)
+![hist Image](9_test_images_hist/straight_lines1_undist_combinedall_warp_hist.jpg)
 Applying histogram filter to find the left and right lanes.
 
 ### Step 10: Final output
-![final Image](10_test_image_final/straight_lines1_combinedall.jpg)
+![final Image](10_test_images_final/straight_lines1_combinedall.jpg)
 
