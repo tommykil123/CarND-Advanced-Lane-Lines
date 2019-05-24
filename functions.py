@@ -183,7 +183,7 @@ def find_lane_pixels(binary_warped):
 
 def measure_curvature(ploty, left_fit, right_fit):
     '''
-    Calculates the curvature of polynomial functions in pixels.
+    Calculates the curvature of polynomial functions in meters.
     '''    
     # Define y-value where we want radius of curvature
     # We'll choose the maximum y-value, corresponding to the bottom of the image
@@ -201,7 +201,7 @@ def fit_polynomial(binary_warped):
     # Second order polynomial to each using `np.polyfit` #
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
-
+    
     # Generate x and y values for plotting
     ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
     try:
@@ -224,7 +224,10 @@ def fit_polynomial(binary_warped):
     for i in range(0,len(left_fitx)-1):
         cv2.line(out_img, (int(left_fitx[i]),int(ploty[i])), (int(left_fitx[i+1]),int(ploty[i+1])), [0, 255, 0], 2) 
         cv2.line(out_img, (int(right_fitx[i]),int(ploty[i])), (int(right_fitx[i+1]),int(ploty[i+1])), [0, 255, 0], 2)   
-    left_curve, right_curve = measure_curvature(ploty, left_fit, right_fit)
+    
+    left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
+    right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2) 
+    left_curve, right_curve = measure_curvature(ploty, left_fit_cr, right_fit_cr)
     cv2.putText(out_img,str(left_curve),(100,600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0),2)
     cv2.putText(out_img,str(right_curve),(1100, 600), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255),2)
     return out_img, left_fit, right_fit, left_curve, right_curve
@@ -326,5 +329,7 @@ def search_around_poly(binary_warped, temp):
     ## End visualization steps ##
     
     #return result
-    left_curve, right_curve = measure_curvature(ploty, left_fit, right_fit)
+    left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
+    right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2) 
+    left_curve, right_curve = measure_curvature(ploty, left_fit_cr, right_fit_cr)
     return left_fit, right_fit, left_curve, right_curve
